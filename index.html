@@ -1,49 +1,34 @@
 <!doctype html>
 
 <html lang="en">
-  <head>
+  <head class="unselectable">
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli%3A400%2C700%2C800&#038;ver=3.0.0" type="text/css" media="all"/>
+    <link rel="stylesheet" href="styles.css" type="text/css" media="all"/>
     <title>The HTML5 Herald</title>
     <script src="dist/ts.js"></script>
-    
-    <style>
-    #rect {
-      width: 70px;
-      height: 70px;
-      position: absolute;
-    }
-
-    body {
-    background-color: rgb(26, 27, 29);
-    color: rgba(255, 240, 249, 0.801);
-    font-family: Muli, serif;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    .center {
-      height: 100px;
-      line-height: 100px;
-      text-align: center;
-      border: 2px dashed #f69c55;
-    }
-    </style>
-
   </head>
   
   <body>
+    <div class="js-indicator" id="js-width-indicator"></div>
+    <div class="js-indicator" id="js-height-indicator"></div>
+    <div>
+      <p id="js-rectText"></p>
+      <img src="bee.png" draggable="false" class="unselectable" id="js-rect"/>
+    </div>
+    <img src="circle.png" id="js-circle"/>
+
+    <div id="actionCenter">
+      <div class="slidecontainer first" id ="hue-slide-container">
+        <p>change the color ;)</p>
+        <input type="range" min="0" max="360" value="0" class="slider first" id="hue-slide"/>
+      </div>
+      <button class="button second" id="autopilot-button"><span id="js-autopilot-button-text-span">Autopilot OFF</span></button>
+    </div>
 
     <h1>Hey man</h1>
     <div class="center">
-      <h2>Use WASD & Space you neandrtálec</h2>
+      <h2>Use WASD & Space</h2>
     </div>
-
-    <div>
-      <img src="bee.png" id ="rect"></div>
-    </div>
-    
   </body>
 </html>
