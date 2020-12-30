@@ -95,7 +95,7 @@ namespace Program {
                     break;
                 case "Screensaver ON":
                     screenSaverPilot.stop();
-                    player.accelerationData.acceleration -= 0.2;
+                    player.accelerationData.acceleration -= 0.3;
                     player.maxSpeed += 3;
                     autopilotButtonTextSpan.innerHTML = "Autopilot OFF"
                     ignoreUserInput = false;
@@ -258,10 +258,10 @@ namespace MovingElements {
         private static readonly divisionFactor = 1.8;
         public currAccelerationX = 0;
         public currAccelerationY = 0;
-        private _acceleration:number = 0.1;
+        private _acceleration:number = 0.17;
         private _accelerationDivided:number = 0;
 
-        constructor(acceleration = 0.1) {
+        constructor(acceleration = 0.17) {
             this.acceleration = acceleration;
         }
 

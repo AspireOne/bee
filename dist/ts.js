@@ -89,7 +89,7 @@ var Program;
                     break;
                 case "Screensaver ON":
                     screenSaverPilot.stop();
-                    player.accelerationData.acceleration -= 0.2;
+                    player.accelerationData.acceleration -= 0.3;
                     player.maxSpeed += 3;
                     autopilotButtonTextSpan.innerHTML = "Autopilot OFF";
                     ignoreUserInput = false;
@@ -226,10 +226,10 @@ var MovingElements;
     MovingElements.Player = Player;
     let Acceleration = /** @class */ (() => {
         class Acceleration {
-            constructor(acceleration = 0.1) {
+            constructor(acceleration = 0.17) {
                 this.currAccelerationX = 0;
                 this.currAccelerationY = 0;
-                this._acceleration = 0.1;
+                this._acceleration = 0.17;
                 this._accelerationDivided = 0;
                 this.acceleration = acceleration;
             }
