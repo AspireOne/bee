@@ -226,10 +226,10 @@ var MovingElements;
     MovingElements.Player = Player;
     let Acceleration = /** @class */ (() => {
         class Acceleration {
-            constructor(acceleration = 0.17) {
+            constructor(acceleration = 0.12) {
                 this.currAccelerationX = 0;
                 this.currAccelerationY = 0;
-                this._acceleration = 0.17;
+                this._acceleration = 0.12;
                 this._accelerationDivided = 0;
                 this.acceleration = acceleration;
             }

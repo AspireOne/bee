@@ -258,10 +258,10 @@ namespace MovingElements {
         private static readonly divisionFactor = 1.8;
         public currAccelerationX = 0;
         public currAccelerationY = 0;
-        private _acceleration:number = 0.17;
+        private _acceleration:number = 0.12;
         private _accelerationDivided:number = 0;
 
-        constructor(acceleration = 0.17) {
+        constructor(acceleration = 0.12) {
             this.acceleration = acceleration;
         }
 
