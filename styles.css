@@ -87,15 +87,6 @@
   height: auto;
 }
 
-#js-circle-placeholder {
-  position: absolute;
-  width: 50px;
-  height: auto;
-  z-index: -1;
-  display: none;
-  height: auto;
-}
-
 body {
   background-color: rgb(26, 27, 29);
   color: rgba(255, 240, 249, 0.801);
