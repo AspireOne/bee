@@ -12,6 +12,10 @@ const keys = {
         definition: ['a', 'A'],
         downPressed: false,
     },
+    floss: {
+        definition: ["Shift"],
+        downPressed: false,
+    },
     changeDownPressed: function (definition, downPressed) {
         let changed = false;
         Object.values(keys).forEach((x) => {
@@ -28,6 +32,7 @@ const keys = {
 function onKeyDown(e) {
     if (keys.changeDownPressed(e instanceof KeyboardEvent && !ignoreUserInput ? e.key : e, true) && e instanceof KeyboardEvent)
         e.preventDefault();
+    console.log(e.key);
 }
 function onKeyUp(e) {
     if (keys.changeDownPressed(e instanceof KeyboardEvent && !ignoreUserInput ? e.key : e, false) && e instanceof KeyboardEvent)
@@ -147,7 +152,7 @@ var MovingElements;
             this.flipElement();
             if ((this.timeFromLastCircle += this.deltaTime) >= this.circleFrequency) {
                 this.timeFromLastCircle = 0;
-                new VanishingCircle(newX, newY, 400, 80, 1, this.circleHue).show();
+                new VanishingCircle(newX, newY, keys.floss.downPressed ? 2000 : 400, 80, 1, this.circleHue).show();
             }
         }
         flipElement() {
@@ -378,11 +383,15 @@ var MovingElements;
     MovingElements.Autopilot = Autopilot;
 })(MovingElements || (MovingElements = {}));
 let VanishingCircle = /** @class */ (() => {
+    var _a;
     class VanishingCircle {
         constructor(x, y, vanishIn = 400, width = 60, initialOpacity = 0.8, hue = 0) {
             this.elapsed = 0;
             this.id = 0;
+            this.applyFilter = true;
+            this.doNotApplyFilterThreshold = 1000;
             this.vanishIn = vanishIn;
+            this.applyFilter = this.vanishIn < this.doNotApplyFilterThreshold;
             this.hue = hue;
             this.initialOpacity = initialOpacity;
             this.x = x + "px";
@@ -393,15 +402,16 @@ let VanishingCircle = /** @class */ (() => {
             this.clone = this.createClone();
         }
         createClone() {
-            let circle = document.getElementById("js-circle");
-            let clone = circle.cloneNode(true);
+            if (VanishingCircle.originalCircle === undefined)
+                VanishingCircle.originalCircle = document.getElementById("js-circle");
+            let clone = VanishingCircle.originalCircle.cloneNode(true);
             Object.assign(clone.style, {
                 left: this.x,
                 top: this.y,
                 width: this.width,
                 display: "block",
                 opacity: this.initialOpacity,
-                filter: `blur(3px) hue-rotate(${this.hue}deg)`,
+                filter: this.applyFilter ? `blur(3px) hue-rotate(${this.hue}deg)` : '',
             });
             return clone;
         }
@@ -423,6 +433,18 @@ let VanishingCircle = /** @class */ (() => {
             }
         }
     }
+    VanishingCircle.prevCirclesBuffer = new (_a = class PrevCirclesBuffer {
+            constructor() {
+                this.buffer = new Array(PrevCirclesBuffer.bufferLength);
+            }
+            contains(circle) {
+            }
+            add(circle) {
+                this.buffer.push(circle);
+            }
+        },
+        _a.bufferLength = 5,
+        _a);
     VanishingCircle.delta = 20;
     return VanishingCircle;
 })();

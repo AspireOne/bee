@@ -1,4 +1,4 @@
-const keys:Readonly<any> = {
+const keys: Readonly<any> = {
     up: {
         definition: [' ', 'w', 'W'],
         downPressed: false,
@@ -11,9 +11,13 @@ const keys:Readonly<any> = {
         definition: ['a', 'A'],
         downPressed: false,
     },
-    changeDownPressed: function(definition:string, downPressed:boolean): boolean {
+    floss: {
+        definition: ["Shift"],
+        downPressed: false,
+    },
+    changeDownPressed: function (definition: string, downPressed: boolean): boolean {
         let changed: boolean = false;
-        Object.values(keys).forEach((x:any) => {
+        Object.values(keys).forEach((x: any) => {
             if (x?.definition?.includes(definition)) {
                 x.downPressed = downPressed;
                 changed = true;
@@ -24,9 +28,11 @@ const keys:Readonly<any> = {
     }
 }
 
+
 function onKeyDown(e: KeyboardEvent | string) {
     if (keys.changeDownPressed(e instanceof KeyboardEvent && !ignoreUserInput ? e.key : e, true) && e instanceof KeyboardEvent)
         e.preventDefault();
+    console.log((e as KeyboardEvent).key);
 }
 
 function onKeyUp(e: KeyboardEvent | string) {
@@ -37,14 +43,14 @@ function onKeyUp(e: KeyboardEvent | string) {
 let ignoreUserInput = false;
 
 namespace Program {
-    let widthIndicator:HTMLElement;
-    let heightIndicator:HTMLElement;
-    let hueSlide:HTMLInputElement;
-    let player:MovingElements.Player;
-    let autopilotButton:HTMLInputElement;
-    let autopilotButtonTextSpan:HTMLElement;
-    let autopilot:MovingElements.Autopilot;
-    let screenSaverPilot:MovingElements.screenSaverPilot;
+    let widthIndicator: HTMLElement;
+    let heightIndicator: HTMLElement;
+    let hueSlide: HTMLInputElement;
+    let player: MovingElements.Player;
+    let autopilotButton: HTMLInputElement;
+    let autopilotButtonTextSpan: HTMLElement;
+    let autopilot: MovingElements.Autopilot;
+    let screenSaverPilot: MovingElements.screenSaverPilot;
 
     //#region event listeners
     document.addEventListener("DOMContentLoaded", _ => {
@@ -59,7 +65,7 @@ namespace Program {
             floatingElement = floatingElement as HTMLElement;
         else
             throw new Error("The element was null.");
-        
+
         player = new MovingElements.Player(floatingElement);
         addListeners();
         player.start();
@@ -67,23 +73,23 @@ namespace Program {
         autopilot = new MovingElements.Autopilot();
         screenSaverPilot = new MovingElements.screenSaverPilot(player);
     });
-/*
-    document.addEventListener('mousemove', e => {
-        const offset = 27;
-        new VanishingCircle(e.x - offset, e.y - offset, 700, 80, 1).show();
-    });
-  */  
+    /*
+        document.addEventListener('mousemove', e => {
+            const offset = 27;
+            new VanishingCircle(e.x - offset, e.y - offset, 700, 80, 1).show();
+        });
+      */
 
     function addListeners() {
         document.addEventListener("keydown", onKeyDown);
         document.addEventListener("keyup", onKeyUp);
         hueSlide.addEventListener("input", (e) => player.circleHue = parseInt(hueSlide.value));
-        autopilotButton.addEventListener("mousedown",  (e) => {
+        autopilotButton.addEventListener("mousedown", (e) => {
             // Magic strings all the way. It's 6am, I didn't go to sleep yet, and I'm too tired to write proper code. Gotta fix it tomorrow.
             switch (autopilotButtonTextSpan.innerHTML) {
                 case "Autopilot OFF":
                     autopilotButtonTextSpan.innerHTML = "Včelka Mája ON";
-                    autopilot.start();    
+                    autopilot.start();
                     ignoreUserInput = true;
                     break;
                 case "Včelka Mája ON":
@@ -115,17 +121,17 @@ namespace MovingElements {
     }
 
     export class Player {
-        public element:HTMLElement;
+        public element: HTMLElement;
         public maxSpeed = 8;
         public deltaTime = 8;
         public accelerationData = new Acceleration();
-        private id:number | null = null;
-        private wayX:WayX = WayX.NONE;
+        private id: number | null = null;
+        private wayX: WayX = WayX.NONE;
         private timeFromLastCircle = 0;
         private circleFrequency = 10;
         public circleHue = 0;
-    
-        constructor(element:HTMLElement) {
+
+        constructor(element: HTMLElement) {
             this.element = element;
 
             this.element.style.top = Program.getAvailableHeight() - this.element.offsetHeight + "px";
@@ -138,19 +144,19 @@ namespace MovingElements {
                 setTimeout(() => text.innerHTML = "", 1500);
             }
         }
-        
+
         public start() {
             if (this.id === null)
                 this.id = setInterval(() => this.frame(), this.deltaTime);
         }
-    
+
         public stop() {
             if (this.id !== null) {
                 clearInterval(this.id);
                 this.id = null;
             }
         }
-    
+
         private frame() {
             let newY = this.calculateNewY();
             let newX = this.calculateNewX();
@@ -162,10 +168,10 @@ namespace MovingElements {
 
             if ((this.timeFromLastCircle += this.deltaTime) >= this.circleFrequency) {
                 this.timeFromLastCircle = 0;
-                new VanishingCircle(newX, newY, 400, 80, 1, this.circleHue).show();
+                new VanishingCircle(newX, newY, keys.floss.downPressed ? 2000 : 400, 80, 1, this.circleHue).show();
             }
         }
-    
+
         private flipElement() {
             let scale = 0;
 
@@ -177,12 +183,12 @@ namespace MovingElements {
             if (scale !== 0)
                 this.element.style.setProperty("transform", "scaleX(" + scale + ")");
         }
-    
-        private calculateNewX():number {
+
+        private calculateNewX(): number {
             const currPosX = parseInt(this.element.style.left);
             const width = this.element.offsetWidth;
             const maxX = Program.getAvailableWidth() - width;
-            const getUpdatedWay = ():WayX => {
+            const getUpdatedWay = (): WayX => {
                 if (this.accelerationData.currAccelerationX > 0)
                     return WayX.RIGHT;
                 else if (this.accelerationData.currAccelerationX < 0)
@@ -191,9 +197,9 @@ namespace MovingElements {
                     return WayX.NONE;
             }
             const updatedWay = getUpdatedWay();
-    
+
             let newAcceleration = this.accelerationData.currAccelerationX;
-            
+
             if (keys.left.downPressed)
                 newAcceleration -= this.accelerationData.acceleration;
             else if (keys.right.downPressed)
@@ -206,12 +212,12 @@ namespace MovingElements {
                 else if (this.accelerationData.currAccelerationX < 0)
                     newAcceleration += this.accelerationData.acceleration;
             }
-    
+
             let newPosX = currPosX + newAcceleration;
 
             this.accelerationData.currAccelerationX = this.correctAcceleration(newAcceleration);
             this.wayX = updatedWay;
-            
+
             if (newPosX < 0) {
                 newPosX = 0;
                 this.accelerationData.currAccelerationX = 0;
@@ -222,17 +228,17 @@ namespace MovingElements {
 
             return newPosX;
         }
-    
-        private calculateNewY():number {
+
+        private calculateNewY(): number {
             const currPosY = parseInt(this.element.style.top);
             const height = this.element.offsetHeight;
             const maxY = Program.getAvailableHeight() - height;
-    
+
             let newAcceleration = this.accelerationData.currAccelerationY + (keys.up.downPressed ? -this.accelerationData.acceleration : this.accelerationData.acceleration);
             let newPosY = currPosY + newAcceleration;
-    
+
             this.accelerationData.currAccelerationY = this.correctAcceleration(newAcceleration);
-            
+
             if (newPosY < 0) {
                 newPosY = 0;
                 this.accelerationData.currAccelerationY = 0;
@@ -240,16 +246,16 @@ namespace MovingElements {
                 newPosY = maxY;
                 this.accelerationData.currAccelerationY = 0;
             }
-    
+
             return newPosY;
         }
-    
-        private correctAcceleration(acceleration:number):number {
+
+        private correctAcceleration(acceleration: number): number {
             if (acceleration > this.maxSpeed)
                 return this.maxSpeed;
             else if (acceleration < -this.maxSpeed)
                 return -this.maxSpeed;
-    
+
             return acceleration;
         }
     }
@@ -258,8 +264,8 @@ namespace MovingElements {
         private static readonly divisionFactor = 1.8;
         public currAccelerationX = 0;
         public currAccelerationY = 0;
-        private _acceleration:number = 0.12;
-        private _accelerationDivided:number = 0;
+        private _acceleration: number = 0.12;
+        private _accelerationDivided: number = 0;
 
         constructor(acceleration = 0.12) {
             this.acceleration = acceleration;
@@ -271,7 +277,7 @@ namespace MovingElements {
 
         public set acceleration(newAcceleration) {
             this._acceleration = newAcceleration;
-            this._accelerationDivided = newAcceleration/Acceleration.divisionFactor;
+            this._accelerationDivided = newAcceleration / Acceleration.divisionFactor;
         }
 
         public get accelerationDivided() {
@@ -280,7 +286,7 @@ namespace MovingElements {
     }
 
     export class screenSaverPilot {
-        public readonly player:Player;
+        public readonly player: Player;
         private static readonly delta = 10;
         private x = 0;
         private y = 0;
@@ -289,7 +295,7 @@ namespace MovingElements {
         private id = 0;
         public running = false;
 
-        constructor(element:Player) {
+        constructor(element: Player) {
             this.player = element;
         }
 
@@ -311,7 +317,7 @@ namespace MovingElements {
             let elemY = parseInt(this.player.element.style.top.replace("px", ""));
             let maxX = Program.getAvailableWidth() - this.player.element.clientWidth;
             let maxY = Program.getAvailableHeight() - this.player.element.clientHeight;
-    
+
             if (elemX <= 0) {
                 this.left = false;
                 onKeyUp(keys.left.definition[0]);
@@ -320,10 +326,10 @@ namespace MovingElements {
                 this.left = true;
                 onKeyUp(keys.right.definition[0]);
                 onKeyDown(keys.left.definition[0]);
-            } else if (this.player.accelerationData.currAccelerationX == 0){
+            } else if (this.player.accelerationData.currAccelerationX == 0) {
                 onKeyDown(keys.left.definition[0]);
             }
-    
+
             if (elemY <= 0) {
                 this.up = false;
                 onKeyUp(keys.up.definition[0]);
@@ -332,8 +338,8 @@ namespace MovingElements {
                 this.up = true;
                 onKeyDown(keys.up.definition[0]);
             }
-        }   
-      }
+        }
+    }
 
     export class Autopilot {
         private static readonly delta = 50;
@@ -344,12 +350,12 @@ namespace MovingElements {
         private currDelayX = 500;
         private currDelayY = 500;
         private elapsedToDelayX = 0;
-        private currPressedKeyX:string = "";
-        private currPressedKeyY:string = "";
+        private currPressedKeyX: string = "";
+        private currPressedKeyY: string = "";
         private elapsedToDelayY = 0;
         private id = 0;
         public running = false;
-        
+
         public start() {
             if (this.running)
                 return;
@@ -407,7 +413,7 @@ namespace MovingElements {
 
         private executeNewY() {
             this.currDelayY = this.getRandomDelay();
-            
+
             const randomKey = Autopilot.possibleKeysY[Math.floor(Math.random() * Autopilot.possibleKeysY.length)];
             this.currPressedKeyY = randomKey;
             if (randomKey != "")
@@ -418,43 +424,63 @@ namespace MovingElements {
     }
 }
 
-class VanishingCircle {
-    private static readonly delta = 20;
-    public readonly vanishIn:number;
-    public readonly x:string;
-    public readonly y:string;
-    public readonly initialOpacity:number;
-    public readonly width:string;
-    public readonly hue:number;
-    private elapsed = 0;
-    private id:number = 0;
-    private prevOpacity:number;
-    private readonly decreaseBy:number;
-    private readonly clone:HTMLElement;
 
-    public constructor(x:number, y:number, vanishIn = 400, width = 60, initialOpacity = 0.8, hue = 0) {
+class VanishingCircle {
+    private static readonly prevCirclesBuffer = new class PrevCirclesBuffer {
+        private static readonly bufferLength = 5;
+        private buffer = new Array<VanishingCircle>(PrevCirclesBuffer.bufferLength);
+
+        public contains(circle: VanishingCircle) {
+
+        }
+
+        public add(circle: VanishingCircle) {
+            this.buffer.push(circle);
+        }
+    }
+
+    private static originalCircle: HTMLElement;
+    private static readonly delta = 20;
+    public readonly vanishIn: number;
+    public readonly x: string;
+    public readonly y: string;
+    public readonly initialOpacity: number;
+    public readonly width: string;
+    public readonly hue: number;
+    private elapsed = 0;
+    private id: number = 0;
+    private prevOpacity: number;
+    private readonly decreaseBy: number;
+    private readonly clone: HTMLElement;
+    private readonly applyFilter: boolean = true;
+    private readonly doNotApplyFilterThreshold = 1000;
+    public constructor(x: number, y: number, vanishIn = 400, width = 60, initialOpacity = 0.8, hue = 0) {
         this.vanishIn = vanishIn;
+        this.applyFilter = this.vanishIn < this.doNotApplyFilterThreshold;
         this.hue = hue;
         this.initialOpacity = initialOpacity;
         this.x = x + "px";
         this.y = y + "px";
-        this.decreaseBy = initialOpacity/(vanishIn/VanishingCircle.delta);
+        this.decreaseBy = initialOpacity / (vanishIn / VanishingCircle.delta);
         this.prevOpacity = initialOpacity;
         this.width = width + "px";
         this.clone = this.createClone();
     }
 
     private createClone() {
-        let circle = document.getElementById("js-circle") as HTMLElement;
-        let clone = circle.cloneNode(true) as HTMLElement;
+        if (VanishingCircle.originalCircle === undefined)
+            VanishingCircle.originalCircle = document.getElementById("js-circle") as HTMLElement
+
+        let clone = VanishingCircle.originalCircle.cloneNode(true) as HTMLElement;
+
         Object.assign(clone.style, {
-                left: this.x,
-                top: this.y,
-                width: this.width,
-                display: "block",
-                opacity: this.initialOpacity,
-                filter: `blur(3px) hue-rotate(${this.hue}deg)`,
-            });
+            left: this.x,
+            top: this.y,
+            width: this.width,
+            display: "block",
+            opacity: this.initialOpacity,
+            filter: this.applyFilter ? `blur(3px) hue-rotate(${this.hue}deg)` : '',
+        });
         return clone;
     }
 
@@ -467,7 +493,7 @@ class VanishingCircle {
         this.elapsed += VanishingCircle.delta;
         let newOpacity = this.prevOpacity - this.decreaseBy;
 
-        if (this.elapsed >= this.vanishIn){
+        if (this.elapsed >= this.vanishIn) {
             this.clone.style.display = "none";
             document.body.removeChild(this.clone);
             clearInterval(this.id);

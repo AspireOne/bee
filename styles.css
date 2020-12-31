@@ -1,200 +1,212 @@
 .unselectable {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-  }
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
 
-  #js-rectText {
-    position: absolute;
-  }
+#js-rectText {
+  position: absolute;
+}
 
-  #js-rect {
-    width: 70px;
-    height: auto;
-    position: absolute;
-  }
+#js-rect {
+  width: 70px;
+  height: auto;
+  position: absolute;
+}
 
-  .js-indicator {
-    background-color: transparent;
-    padding: 0;
-    margin: 0;
-    border-width: 0px;
-    left: 0;
-    right: 0;
-  }
-  
-  #js-width-indicator {
-    height: 1px;
-    width: 100%;
-  }
+.js-indicator {
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  border-width: 0px;
+  left: 0;
+  right: 0;
+}
 
-  #js-height-indicator {
-    width: 1px;
-    height: 99%;
-    position: absolute;
-  }
+#js-width-indicator {
+  height: 1px;
+  width: 100%;
+}
 
-  .button {
-    border-radius: 4px;
-    background-color: #fa8212;
-    border: none;
-    color: #FFFFFF;
-    text-align: center;
-    font-size: 28px;
-    padding: 20px;
-    width: 200px;
-    transition: all 0.5s;
-    cursor: pointer;
-    margin: 5px;
-  }
-  
-  .button span {
-    cursor: pointer;
-    display: inline-block;
-    position: relative;
-    transition: 0.5s;
-    font-size: 1em;
-  }
-  
-  .button span:after {
-    content: '\00bb';
-    position: absolute;
-    opacity: 0;
-    top: 0;
-    right: -20px;
-    transition: 0.5s;
-  }
-  
-  .button:hover span {
-    padding-right: 25px;
-  }
-  
-  .button:hover span:after {
-    opacity: 1;
-    right: 0;
-  }
+#js-height-indicator {
+  width: 1px;
+  height: 99%;
+  position: absolute;
+}
 
-  #js-circle {
-    position: absolute;
-    width: 50px;
-    height: auto;
-    z-index: -1;
-    display: none;
-    height: auto;
-  }
+.button {
+  border-radius: 4px;
+  background-color: #fa8212;
+  border: none;
+  color: #FFFFFF;
+  text-align: center;
+  font-size: 28px;
+  padding: 20px;
+  width: 200px;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin: 5px;
+}
 
-  body {
+.button span {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+  font-size: 1em;
+}
+
+.button span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.button:hover span {
+  padding-right: 25px;
+}
+
+.button:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+
+#js-circle {
+  position: absolute;
+  width: 50px;
+  height: auto;
+  z-index: -1;
+  display: none;
+  height: auto;
+}
+
+#js-circle-placeholder {
+  position: absolute;
+  width: 50px;
+  height: auto;
+  z-index: -1;
+  display: none;
+  height: auto;
+}
+
+body {
   background-color: rgb(26, 27, 29);
   color: rgba(255, 240, 249, 0.801);
   font-family: Muli, serif;
-  margin:0;
-  padding:0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   position: relative;
   min-height: 100vh;
-  }
+}
 
-  #content-wrap {
-    padding-bottom: 2.5rem;    /* Footer height */
-  }
-  
-  .footer {
-    position: absolute;
-    bottom: 0;
-    
-    height: 2.5rem;            /* Footer height */
-  }
+#content-wrap {
+  padding-bottom: 2.5rem;
+  /* Footer height */
+}
 
-  h1 {
-    text-align: center;
-  }
+.footer {
+  position: absolute;
+  bottom: 0;
 
-  .center {
-    height: 100px;
-    line-height: 100px;
-    text-align: center;
+  height: 2.5rem;
+  /* Footer height */
+}
 
-  }
+h1 {
+  text-align: center;
+}
 
-  .slider {
-    -webkit-appearance: none;
-    height: 15px;
-    border-radius: 5px;  
-    background: #ffffff;
-    outline: none;
-    -webkit-transition: .2s;
-    transition: opacity .2s;
-    width: 100%;
-  }
+.center {
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
 
-  #actionCenter {
-    width: 100%;
-    border-bottom: 1px solid rgb(255, 115, 0, 0.2);
-    overflow: hidden; /* add this to contain floated children */
-  }
+}
 
-  .first {
-    float:left;
-  }
+.slider {
+  -webkit-appearance: none;
+  height: 15px;
+  border-radius: 5px;
+  background: #ffffff;
+  outline: none;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  width: 100%;
+}
 
-  #autopilot-button {
-    margin: 0;
-    margin-left: 1em;
-    padding: 0;
-    height: 2.5em;
-    width: 9em;
-    font-size: 1.5em;
-    outline:none;
-    margin-top: 3px;
-  }
+#actionCenter {
+  width: 100%;
+  border-bottom: 1px solid rgb(255, 115, 0, 0.2);
+  overflow: hidden;
+  /* add this to contain floated children */
+}
 
-  .second {
-    float: left;
-  }
+.first {
+  float: left;
+}
 
-  body * {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    
-    user-select: none;
-  }
+#autopilot-button {
+  margin: 0;
+  margin-left: 1em;
+  padding: 0;
+  height: 2.5em;
+  width: 9em;
+  font-size: 1.5em;
+  outline: none;
+  margin-top: 3px;
+}
 
-  .slidecontainer p {
-    text-align: center;
-    font-size: 1.2em;
-    padding: 0;
-    margin: 0;
-    padding-bottom: 10px;
+.second {
+  float: left;
+}
+
+body * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+
+  user-select: none;
+}
+
+.slidecontainer p {
+  text-align: center;
+  font-size: 1.2em;
+  padding: 0;
+  margin: 0;
+  padding-bottom: 10px;
 }
 
 #hue-slide-container {
-    width: 50%;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+  width: 50%;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
 }
 
 .slider::-webkit-slider-thumb {
--webkit-appearance: none;
-appearance: none;
-width: 25px;
-height: 25px;
-border-radius: 50%; 
-background: #fa8212;
-cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #fa8212;
+  cursor: pointer;
 }
 
 .slider::-moz-range-thumb {
-width: 25px;
-height: 25px;
-border-radius: 50%;
-background:#fa8212;
-cursor: pointer;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #fa8212;
+  cursor: pointer;
 }
