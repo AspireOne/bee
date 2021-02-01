@@ -8,7 +8,7 @@
   user-select: none;
 }
 
-#js-rectText {
+#js-rect-text {
   position: absolute;
 }
 
@@ -133,7 +133,7 @@ h1 {
   width: 100%;
 }
 
-#actionCenter {
+#action-center {
   width: 100%;
   border-bottom: 1px solid rgb(255, 115, 0, 0.2);
   overflow: hidden;
@@ -153,6 +153,7 @@ h1 {
   font-size: 1.5em;
   outline: none;
   margin-top: 3px;
+  margin-right: 1em;
 }
 
 .second {

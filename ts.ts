@@ -16,35 +16,33 @@ const keys: Readonly<any> = {
         downPressed: false,
     },
     changeDownPressed: function (definition: string, downPressed: boolean): boolean {
-        let changed: boolean = false;
+        let changed = false;
         Object.values(keys).forEach((x: any) => {
             if (x?.definition?.includes(definition)) {
                 x.downPressed = downPressed;
                 changed = true;
-                // keep iterating if two keys had the same definition
+                // Keep iterating because two keys could have the same definition.
             }
         })
+
         return changed;
     }
 }
 
-
-function onKeyDown(e: KeyboardEvent | string) {
-    if (keys.changeDownPressed(e instanceof KeyboardEvent && !ignoreUserInput ? e.key : e, true) && e instanceof KeyboardEvent)
-        e.preventDefault();
-    console.log((e as KeyboardEvent).key);
-}
-
-function onKeyUp(e: KeyboardEvent | string) {
-    if (keys.changeDownPressed(e instanceof KeyboardEvent && !ignoreUserInput ? e.key : e, false) && e instanceof KeyboardEvent)
-        e.preventDefault();
-}
-
 let ignoreUserInput = false;
+const onKeyDown = (e: KeyboardEvent | string) => onKeyChange(e, true);
+const onKeyUp = (e: KeyboardEvent | string) => onKeyChange(e, false);
+
+function onKeyChange(e: KeyboardEvent | string, keyDown: boolean) {
+    if (keys.changeDownPressed(e instanceof KeyboardEvent && !ignoreUserInput ? e.key : e, keyDown) && e instanceof KeyboardEvent)
+        e.preventDefault();
+}
+
 
 namespace Program {
     let widthIndicator: HTMLElement;
     let heightIndicator: HTMLElement;
+    let pilotOrderText: HTMLElement;
     let hueSlide: HTMLInputElement;
     let player: MovingElements.Player;
     let autopilotButton: HTMLInputElement;
@@ -52,7 +50,7 @@ namespace Program {
     let autopilot: MovingElements.Autopilot;
     let screenSaverPilot: MovingElements.screenSaverPilot;
 
-    //#region event listeners
+    //#region event listeners.
     document.addEventListener("DOMContentLoaded", _ => {
         let floatingElement = document.getElementById("js-rect") as HTMLElement;
         widthIndicator = document.getElementById("js-width-indicator") as HTMLElement;
@@ -60,6 +58,8 @@ namespace Program {
         hueSlide = document.getElementById("hue-slide") as HTMLInputElement;
         autopilotButton = document.getElementById("autopilot-button") as HTMLInputElement;
         autopilotButtonTextSpan = document.getElementById("js-autopilot-button-text-span") as HTMLElement;
+        pilotOrderText = document.getElementById("pilot-order") as HTMLElement;
+        pilotOrderText.innerText = "1/3";
 
         if (floatingElement !== null)
             floatingElement = floatingElement as HTMLElement;
@@ -70,41 +70,56 @@ namespace Program {
         addListeners();
         player.start();
 
-        autopilot = new MovingElements.Autopilot();
+        autopilot = new MovingElements.Autopilot(player);
         screenSaverPilot = new MovingElements.screenSaverPilot(player);
     });
+
     /*
-        document.addEventListener('mousemove', e => {
-            const offset = 27;
-            new VanishingCircle(e.x - offset, e.y - offset, 700, 80, 1).show();
-        });
-      */
+    // Adds circleVanishing effect to the cursor.
+    document.addEventListener('mousemove', e => {
+        const offset = 33;
+        new VanishingCircle(e.x - offset, e.y - offset, 700, 80, 1).show();
+    });
+    */
 
     function addListeners() {
         document.addEventListener("keydown", onKeyDown);
         document.addEventListener("keyup", onKeyUp);
         hueSlide.addEventListener("input", (e) => player.circleHue = parseInt(hueSlide.value));
         autopilotButton.addEventListener("mousedown", (e) => {
-            // Magic strings all the way. It's 6am, I didn't go to sleep yet, and I'm too tired to write proper code. Gotta fix it tomorrow.
+            const autoPilotOff = "Autopilot OFF";
+            const majaBeeOn = "Včelka mája ON";
+            const screenSaverOn = "Screen Saver ON";
+            const screenSaverAccelerationIncrease = 0.3;
+            const screenSaverSpeedDecrease = 3;
+            const majaBeeSpeedDecrease = 1;
+            const modes = 3;
+
             switch (autopilotButtonTextSpan.innerHTML) {
-                case "Autopilot OFF":
-                    autopilotButtonTextSpan.innerHTML = "Včelka Mája ON";
+                case autoPilotOff:
+                    autopilotButtonTextSpan.innerHTML = majaBeeOn;
                     autopilot.start();
                     ignoreUserInput = true;
+                    pilotOrderText.innerText = "2/" + modes;
+                    player.maxSpeed -= majaBeeSpeedDecrease;
                     break;
-                case "Včelka Mája ON":
-                    autopilotButtonTextSpan.innerHTML = "Screensaver ON";
+                case majaBeeOn:
+                    autopilotButtonTextSpan.innerHTML = screenSaverOn;
                     autopilot.stop();
                     screenSaverPilot.start();
-                    player.accelerationData.acceleration += 0.3;
-                    player.maxSpeed -= 3;
+                    player.maxSpeed += majaBeeSpeedDecrease;
+                    player.accelerationData.acceleration += screenSaverAccelerationIncrease;
+                    player.maxSpeed -= screenSaverSpeedDecrease;
+                    ignoreUserInput = true;
+                    pilotOrderText.innerText = "3/" + modes;
                     break;
-                case "Screensaver ON":
+                case screenSaverOn:
                     screenSaverPilot.stop();
-                    player.accelerationData.acceleration -= 0.3;
-                    player.maxSpeed += 3;
-                    autopilotButtonTextSpan.innerHTML = "Autopilot OFF"
+                    player.accelerationData.acceleration -= screenSaverAccelerationIncrease;
+                    player.maxSpeed += screenSaverSpeedDecrease;
+                    autopilotButtonTextSpan.innerHTML = autoPilotOff;
                     ignoreUserInput = false;
+                    pilotOrderText.innerText = "1/" + modes;
                     break;
             }
         });
@@ -120,24 +135,28 @@ namespace MovingElements {
         NONE
     }
 
-    export class Player {
+    export class Player implements Pilot {
+        public currY = 0;
+        public currX = 0;
         public element: HTMLElement;
-        public maxSpeed = 8;
+        public maxSpeed = 7;
         public deltaTime = 8;
         public accelerationData = new Acceleration();
+        public circleHue = 0;
         private id: number | null = null;
         private wayX: WayX = WayX.NONE;
         private timeFromLastCircle = 0;
         private circleFrequency = 10;
-        public circleHue = 0;
+        private scale = 0;
 
         constructor(element: HTMLElement) {
             this.element = element;
+            this.scale = parseInt(element.style.transform.replace(/\D/g, ""));
 
             this.element.style.top = Program.getAvailableHeight() - this.element.offsetHeight + "px";
             this.element.style.left = "0px";
             this.element.onclick = () => {
-                let text = document.getElementById("js-rectText") as HTMLElement;
+                let text = document.getElementById("js-rect-text") as HTMLElement;
                 text.innerHTML = "Bzzzzz";
                 text.style.left = element.style.left;
                 text.style.top = parseInt(element.style.top) - 40 + "px";
@@ -160,11 +179,13 @@ namespace MovingElements {
         private frame() {
             let newY = this.calculateNewY();
             let newX = this.calculateNewX();
+            this.currY = newY;
+            this.currX = newX;
 
             this.element.style.top = newY + "px";
             this.element.style.left = newX + "px";
 
-            this.flipElement();
+            this.flipElementIfShould();
 
             if ((this.timeFromLastCircle += this.deltaTime) >= this.circleFrequency) {
                 this.timeFromLastCircle = 0;
@@ -172,7 +193,7 @@ namespace MovingElements {
             }
         }
 
-        private flipElement() {
+        private flipElementIfShould() {
             let scale = 0;
 
             if (keys.right.downPressed)
@@ -180,8 +201,10 @@ namespace MovingElements {
             else if (keys.left.downPressed)
                 scale = 1;
 
-            if (scale !== 0)
+            if (scale !== 0 && scale !== this.scale) {
                 this.element.style.setProperty("transform", "scaleX(" + scale + ")");
+                this.scale = scale;
+            }
         }
 
         private calculateNewX(): number {
@@ -285,13 +308,11 @@ namespace MovingElements {
         }
     }
 
-    export class screenSaverPilot {
+    export interface Pilot { }
+
+    export class screenSaverPilot implements Pilot {
         public readonly player: Player;
         private static readonly delta = 10;
-        private x = 0;
-        private y = 0;
-        private up = false;
-        private left = false;
         private id = 0;
         public running = false;
 
@@ -319,11 +340,9 @@ namespace MovingElements {
             let maxY = Program.getAvailableHeight() - this.player.element.clientHeight;
 
             if (elemX <= 0) {
-                this.left = false;
                 onKeyUp(keys.left.definition[0]);
                 onKeyDown(keys.right.definition[0]);
             } else if (elemX >= maxX) {
-                this.left = true;
                 onKeyUp(keys.right.definition[0]);
                 onKeyDown(keys.left.definition[0]);
             } else if (this.player.accelerationData.currAccelerationX == 0) {
@@ -331,20 +350,18 @@ namespace MovingElements {
             }
 
             if (elemY <= 0) {
-                this.up = false;
                 onKeyUp(keys.up.definition[0]);
             }
             else if (elemY >= maxY) {
-                this.up = true;
                 onKeyDown(keys.up.definition[0]);
             }
         }
     }
 
-    export class Autopilot {
+    export class Autopilot implements Pilot {
         private static readonly delta = 50;
-        private static readonly maxDelay = 500;
-        private static readonly minDelay = 100;
+        private static readonly maxDelay = 550;
+        private static readonly minDelay = 150;
         private static readonly possibleKeysX = ["", "a", "d"];
         private static readonly possibleKeysY = ["", "w"];
         private currDelayX = 500;
@@ -354,11 +371,18 @@ namespace MovingElements {
         private currPressedKeyY: string = "";
         private elapsedToDelayY = 0;
         private id = 0;
+        private playerPosCheckOffset = 90;
+        readonly player: Player;
         public running = false;
+
+        constructor(player: Player) {
+            this.player = player;
+        }
 
         public start() {
             if (this.running)
                 return;
+
             this.running = true;
             this.id = setInterval(() => {
                 this.updateX();
@@ -375,10 +399,12 @@ namespace MovingElements {
             this.resetY();
         }
 
-        // this Y X duplication could be solved by a shared interface or abstract class (as a lot of other things) or what they use here lol, but who has time for that
+        // This Y X duplication could be solved by a shared interface or abstract class (as a lot of other things) or what they use here lol, but who has the time for that.
 
         private updateX() {
-            if ((this.elapsedToDelayX += Autopilot.delta) >= this.currDelayX) {
+            /* If the bee is out of bounds (too close to a wall), do not respect current
+             key delay and force an immediate update, which will make the bee fly out of it. */
+            if ((this.elapsedToDelayX += Autopilot.delta) >= this.currDelayX || this.isXOutOfBounds()) {
                 this.resetX();
                 this.executeNewX();
             }
@@ -390,16 +416,39 @@ namespace MovingElements {
                 onKeyUp(this.currPressedKeyX);
         }
 
+        private isXOutOfBounds(): boolean {
+            const playerWidth = this.player.element.offsetWidth;
+            const playerMaxX = Program.getAvailableWidth() - playerWidth;
+            return this.player.currX >= playerMaxX - this.playerPosCheckOffset || this.player.currX <= this.playerPosCheckOffset;
+        }
+
+        private isYOutOfBounds(): boolean {
+            const playerHeight = this.player.element.offsetHeight;
+            const playerMaxY = Program.getAvailableHeight() - playerHeight;
+            return this.player.currY >= playerMaxY - this.playerPosCheckOffset || this.player.currY <= this.playerPosCheckOffset;
+        }
+
         private executeNewX() {
+            let key: string;
+
+            const playerWidth = this.player.element.offsetWidth;
+            const playerMaxX = Program.getAvailableWidth() - playerWidth;
+
+            if (this.player.currX >= playerMaxX - this.playerPosCheckOffset)
+                key = "a";
+            else if (this.player.currX <= this.playerPosCheckOffset)
+                key = "d";
+            else
+                key = Autopilot.possibleKeysX[Math.floor(Math.random() * Autopilot.possibleKeysX.length)];
+
             this.currDelayX = this.getRandomDelay();
-            const randomKey = Autopilot.possibleKeysX[Math.floor(Math.random() * Autopilot.possibleKeysX.length)];
-            this.currPressedKeyX = randomKey;
-            if (randomKey != "")
-                onKeyDown(randomKey);
+            this.currPressedKeyX = key;
+            if (key != "")
+                onKeyDown(key);
         }
 
         private updateY() {
-            if ((this.elapsedToDelayY += Autopilot.delta) >= this.currDelayY) {
+            if ((this.elapsedToDelayY += Autopilot.delta) >= this.currDelayY || this.isYOutOfBounds()) {
                 this.resetY();
                 this.executeNewY();
             }
@@ -412,12 +461,22 @@ namespace MovingElements {
         }
 
         private executeNewY() {
-            this.currDelayY = this.getRandomDelay();
+            let key: string;
 
-            const randomKey = Autopilot.possibleKeysY[Math.floor(Math.random() * Autopilot.possibleKeysY.length)];
-            this.currPressedKeyY = randomKey;
-            if (randomKey != "")
-                onKeyDown((randomKey));
+            const playerHeight = this.player.element.offsetHeight;
+            const playerMaxY = Program.getAvailableHeight() - playerHeight;
+
+            if (this.player.currY >= playerMaxY - this.playerPosCheckOffset)
+                key = "w";
+            else if (this.player.currY <= this.playerPosCheckOffset)
+                key = "";
+            else
+                key = Autopilot.possibleKeysY[Math.floor(Math.random() * Autopilot.possibleKeysY.length)];
+
+            this.currDelayY = this.getRandomDelay();
+            this.currPressedKeyY = key;
+            if (key != "")
+                onKeyDown((key));
         }
 
         private getRandomDelay = () => (Math.random() * (Autopilot.maxDelay - Autopilot.minDelay)) + Autopilot.minDelay;
@@ -426,27 +485,14 @@ namespace MovingElements {
 
 
 class VanishingCircle {
-    private static readonly prevCirclesBuffer = new class PrevCirclesBuffer {
-        private static readonly bufferLength = 5;
-        private buffer = new Array<VanishingCircle>(PrevCirclesBuffer.bufferLength);
-
-        public contains(circle: VanishingCircle) {
-
-        }
-
-        public add(circle: VanishingCircle) {
-            this.buffer.push(circle);
-        }
-    }
-
-    private static originalCircle: HTMLElement;
-    private static readonly delta = 20;
     public readonly vanishIn: number;
     public readonly x: string;
     public readonly y: string;
     public readonly initialOpacity: number;
     public readonly width: string;
     public readonly hue: number;
+    private static originalCircle: HTMLElement;
+    private static readonly delta = 20;
     private elapsed = 0;
     private id: number = 0;
     private prevOpacity: number;
@@ -454,8 +500,10 @@ class VanishingCircle {
     private readonly clone: HTMLElement;
     private readonly applyFilter: boolean = true;
     private readonly doNotApplyFilterThreshold = 1000;
-    public constructor(x: number, y: number, vanishIn = 400, width = 60, initialOpacity = 0.8, hue = 0) {
+    public constructor(x: number, y: number, vanishIn = 400, size = 60, initialOpacity = 0.8, hue = 0) {
         this.vanishIn = vanishIn;
+        /* I didn't find a way to apply the filter to a lot of circles simulatenously without making the website laggy, so we'll
+         just disable it if there's too many circles. */
         this.applyFilter = this.vanishIn < this.doNotApplyFilterThreshold;
         this.hue = hue;
         this.initialOpacity = initialOpacity;
@@ -463,7 +511,7 @@ class VanishingCircle {
         this.y = y + "px";
         this.decreaseBy = initialOpacity / (vanishIn / VanishingCircle.delta);
         this.prevOpacity = initialOpacity;
-        this.width = width + "px";
+        this.width = size + "px";
         this.clone = this.createClone();
     }
 
@@ -481,15 +529,16 @@ class VanishingCircle {
             opacity: this.initialOpacity,
             filter: this.applyFilter ? `blur(3px) hue-rotate(${this.hue}deg)` : '',
         });
+
         return clone;
     }
 
     public show() {
         document.body.appendChild(this.clone);
-        this.id = setInterval(() => this.vanish(), VanishingCircle.delta);
+        this.id = setInterval(() => this.updateVanish(), VanishingCircle.delta);
     }
 
-    private vanish() {
+    private updateVanish() {
         this.elapsed += VanishingCircle.delta;
         let newOpacity = this.prevOpacity - this.decreaseBy;
 
